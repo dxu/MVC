@@ -70,7 +70,8 @@ exports = upthere.preview = {}
 # want to be able to make views replaceable - top view
 
 class Controller
-  plugins:
+
+  plugins: []
     active: []
     inactive: []
 
@@ -87,7 +88,15 @@ class Controller
     for plugin in args
       @plugins.inactive.push plugin
 
-  activate: ->
+  search: (criteria) ->
+    if criteria instanceof Function
+      return _.filter(@plugins, criteria)
+    else if criteria.constructor == Object and typeof criteria == 'object'
+      return _.where(@plugins, criteria)
+
+  # method to replace one plugin with another
+  replace: (criteria1, critera2) ->
+
 
   # initialization code for the controller
   init: ->
