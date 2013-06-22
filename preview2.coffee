@@ -2,8 +2,13 @@
 delegateEventSplitter = /^(\S+)\s*(.*)$/
 
 class Plugin
+  # TODO: need a way to re-render the tempaltes. one option is backbone views
+  # other option: custom data attribute for each "attributes", set value of that data type
+  #
+  # #TODO: custom templating language that adds data attributes to html. choose which ones to re render
 
   # specific to upthere
+  # all mutable attributes
   attributes:
     isDraggable: yes
     isDownloadable: yes
@@ -45,19 +50,20 @@ class Plugin
   events: {}
   get: (attr) ->
     @attributes[attr]
-  set: (attr, val) ->
+  set: (attr, val, regen=true) ->
     @attributes[attr] = val
     # TODO: re-render the template, implement pub/sub or use airwaves.
-    @render()
+    if regen
+      @render()
 
   # update is called by the event delegator from the controller.
   # in the event that this view needs to be changed, update passes a data object with the necessary information as its first parameter
   update: (data) ->
     throw new Error('update is an abstract method')
 
-  # By default returns $el
+  # render replaces data attributes that get changed
   render: ->
-    $el
+
 
 
 exports = upthere.preview = {}
@@ -69,12 +75,10 @@ exports = upthere.preview = {}
 #
 # want to be able to make views replaceable - top view
 
+# specific to upthere: plugins are unique by type
 class Controller
 
-  plugins: []
-    active: []
-    inactive: []
-
+  plugins: {}
   # creates a named instance. For example, "preview" controller
   constructor: (type, selector) ->
     @type = type
@@ -86,17 +90,20 @@ class Controller
   addPlugins: ->
     args = Array.prototype.slice.call(arguments, 0)
     for plugin in args
-      @plugins.inactive.push plugin
+      @plugins[plugin.type] = plugin
 
+  # search by function, object literal, or default type
   search: (criteria) ->
     if criteria instanceof Function
       return _.filter(@plugins, criteria)
     else if criteria.constructor == Object and typeof criteria == 'object'
       return _.where(@plugins, criteria)
+    # otherwise just the string type
+    else @plugin[criteria]
 
   # method to replace one plugin with another
-  replace: (criteria1, critera2) ->
-
+  replacePlugin: (criteria1, critera2) ->
+    @search(criteria1).$el.replaceWith @search(criteria2).$el
 
   # initialization code for the controller
   init: ->
