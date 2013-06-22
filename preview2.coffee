@@ -70,23 +70,29 @@ exports = upthere.preview = {}
 # want to be able to make views replaceable - top view
 
 class Controller
+  plugins:
+    active: []
+    inactive: []
 
-
-  # creates a type. For example, "preview" controller
+  # creates a named instance. For example, "preview" controller
   constructor: (type, selector) ->
     @type = type
     @$el = $(selector)
     @el = @$el[0]
     @init()
 
+  # takes in zero or more arguments
+  addPlugins: ->
+    args = Array.prototype.slice.call(arguments, 0)
+    for plugin in args
+      @plugins.inactive.push plugin
+
+  activate: ->
+
   # initialization code for the controller
   init: ->
 
   # Events mapped to functions
-  # for this case, "selection"
+  # for example, "selection"
   events: {}
-
-
-
-
 
