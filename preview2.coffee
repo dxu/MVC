@@ -2,10 +2,11 @@
 delegateEventSplitter = /^(\S+)\s*(.*)$/
 
 class Plugin
+
+  # parent selector. the element selector inside the controller element that this plugin should live in
+  parentSelector: ''
+
   # TODO: need a way to re-render the tempaltes. one option is backbone views
-  # other option: custom data attribute for each "attributes", set value of that data type
-  #
-  # #TODO: custom templating language that adds data attributes to html. choose which ones to re render
 
   # specific to upthere
   # all mutable attributes
@@ -16,9 +17,12 @@ class Plugin
     isDeletable: yes
 
   # initialize a previewplugin with a type
-  constructor: (type, el_data) ->
+  constructor: (type, attrs) ->
     @type = type
+    @attributes = attrs
     # bind all defined events to their selectors with given method
+    @$el = $(_.template @template, @attributes)
+    @el = @$el[0]
     _.each @_events, (method, key) ->
       match = key.match delegateEventSplitter
       [eventName, selector] = match
@@ -26,7 +30,6 @@ class Plugin
         @$el.on eventName, method
       else
         @$el.on eventName, selector, method
-    @el = _.template @template, el_data
 
   # template
   # el
@@ -63,6 +66,7 @@ class Plugin
 
   # render replaces data attributes that get changed
   render: ->
+    _.template
 
 
 
@@ -78,6 +82,8 @@ exports = upthere.preview = {}
 # specific to upthere: plugins are unique by type
 class Controller
 
+  # TODO: create airwaves channel for broadcasting events among plugins in this controller
+
   plugins: {}
   # creates a named instance. For example, "preview" controller
   constructor: (type, selector) ->
@@ -87,10 +93,18 @@ class Controller
     @init()
 
   # takes in zero or more arguments
-  addPlugins: ->
+  # {
+  #   type:
+  #   ...
+  # }
+  # adds it to the plugins
+  registerPlugins: ->
     args = Array.prototype.slice.call(arguments, 0)
     for plugin in args
       @plugins[plugin.type] = plugin
+
+  registerPlugin: (plugin, activated)->
+    @plugin[plugin.type] = plugin
 
   # search by function, object literal, or default type
   search: (criteria) ->
@@ -101,14 +115,35 @@ class Controller
     # otherwise just the string type
     else @plugin[criteria]
 
+  # TODO: not sure that i need this
   # method to replace one plugin with another
+  # given two types, replace first with second
   replacePlugin: (criteria1, critera2) ->
-    @search(criteria1).$el.replaceWith @search(criteria2).$el
+    # @search(criteria1).$el.replaceWith @search(criteria2).$el
+    # all replace does is replace the type
+    @active[(_.indexOf active, criteria1)] = criteria2
+
+  # activates plugin. Takes the plugin's parent element and replaces it with the $el
+  #
+  # can take a function, object literal, default type (uses search)
+  activatePlugin: (criteria) ->
+    plugin = search criteria
+    $el.find(plugin.parentSelector).html(plugin.$el)
+
+
+
+  # replaces html with the "active" plugins
+  # from plugins, picks only the ones that match the types in active
+  # ***** this render should only need to be called once initially. All others should be using activateplugin
+  render: ->
+    $el.html _.pluck _.pick.apply(this, [].concat.apply(@plugins, @active)), '$el'
 
   # initialization code for the controller
   init: ->
 
   # Events mapped to functions
-  # for example, "selection"
+  # for example, "selection" should map to render (to re-render)
   events: {}
+
+
 
