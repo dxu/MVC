@@ -7,7 +7,6 @@ class Plugin
   #
   # #TODO: custom templating language that adds data attributes to html. choose which ones to re render
 
-  # specific to upthere
   # all mutable attributes
   attributes:
     isDraggable: yes
