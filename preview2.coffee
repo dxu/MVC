@@ -65,7 +65,7 @@ class Plugin
 
 
 
-exports = upthere.preview = {}
+exports = {}
 
 ##
 # controller - delegates events to views and renders them
@@ -74,7 +74,7 @@ exports = upthere.preview = {}
 #
 # want to be able to make views replaceable - top view
 
-# specific to upthere: plugins are unique by type
+# plugins are unique by type
 class Controller
 
   plugins: {}
